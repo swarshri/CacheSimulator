@@ -97,6 +97,7 @@ public:
         }
     }
 
+    // Return 1 (Read Hit) if there is a hit, otherwise return 0 (Read Miss)
     bool read(bitset<32> address) {
         int current_tag = bitset<32>(address.to_string().substr(32, this->tag_bits)).to_ulong();
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
@@ -108,6 +109,7 @@ public:
             return false;
     }
 
+    // Return 1 (Write Hit) if there is a hit, otherwise return 0 (Write Miss) 
     bool write(bitset<32> address) {
         int current_tag = bitset<32>(address.to_string().substr(32, this->tag_bits)).to_ulong();
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
@@ -121,6 +123,7 @@ public:
             return false;
     }
 
+    // Update the cache content
     void update(bitset<32> address) {
         int current_tag = bitset<32>(address.to_string().substr(32, this->tag_bits)).to_ulong();
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
@@ -128,10 +131,12 @@ public:
         this->contents[current_index] = tuple<int, bool, bool>(current_tag, true, false);
     }
 
+    // Returns the dirty bit
     bool check(bitset<32> address) {
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
         return get<2>(this->contents[current_index]); // return dirty bit
     }
+
 
     bitset<32> getCurrentData(bitset<32> address) {
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
@@ -158,11 +163,12 @@ public:
         this->index_start_bit = 32 - this->index_bits - this->offset_bits;
 
         for (int i = 0; i < pow(2, this->index_bits); i++) {
-            get<1>(contents[i]).resize(this->ways);
+            get<1>(contents[i]).resize(this->ways); // resize the vector in contents to be equal to the number of ways
             contents[i] = tuple<int, vector<tuple<int, bool, bool>>>(0, { tuple<int, bool, bool>(0, false, false) });
         }
     }
 
+    // Return 1 if there is a way with the same tag and valid bit (Read hit). Otherwise, Read Miss.
     bool read(bitset<32> address) {
         int current_tag = bitset<32>(address.to_string().substr(32, this->tag_bits)).to_ulong();
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
@@ -175,6 +181,7 @@ public:
         return false;
     }
 
+    // "QUESTION" Before writing, shouldn't we check the dirty bit to write back to L2/main memory?
     bool write(bitset<32> address) {
         int current_tag = bitset<32>(address.to_string().substr(32, this->tag_bits)).to_ulong();
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
@@ -208,7 +215,7 @@ public:
 
     bitset<32> getCurrentData(bitset<32> address) {
 
-    }
+    } 
 };
 
 class FullyAssociativeCache : public Cache {
