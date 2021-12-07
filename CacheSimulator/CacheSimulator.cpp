@@ -64,15 +64,23 @@ public:
         this->offset_start_bit = 32 - this->offset_bits;
     }
 
-    virtual bool read(bitset<32> address) {}
+    virtual bool read(bitset<32> address) {
+        return false;
+    }
 
-    virtual bool write(bitset<32> address) {}
+    virtual bool write(bitset<32> address) {
+        return false;
+    }
 
     virtual void update(bitset<32> address) {}
 
-    virtual bool check(bitset<32> address) {}
+    virtual bool check(bitset<32> address) {
+        return false;
+    }
 
-    virtual bitset<32> getCurrentData(bitset<32> address) {}
+    virtual bitset<32> getCurrentData(bitset<32> address) {
+        return bitset<32>(0);
+    }
 };
 
 class DirectMappedCache : public Cache {
@@ -137,12 +145,13 @@ public:
         return get<2>(this->contents[current_index]); // return dirty bit
     }
 
-
     bitset<32> getCurrentData(bitset<32> address) {
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
-        bitset<32> index_bits = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits));
-        bitset<32> tag_val = bitset<32>(get<int>(this->contents[current_index]));
-        //bitset<32> tag_bits - to do
+        string index_val = address.to_string().substr(this->index_start_bit, this->index_bits);
+        string tag_val = bitset<32>(get<int>(this->contents[current_index])).to_string().substr(32, this->tag_bits);
+        string offset_val = address.to_string().substr(this->offset_start_bit, this->offset_bits);
+        bitset<32> current_data = bitset<32>(index_val + tag_val + offset_val);
+        return current_data;
     }
 };
 
@@ -214,8 +223,14 @@ public:
     }
 
     bitset<32> getCurrentData(bitset<32> address) {
-
-    } 
+        int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
+        int next_fill_way = get<int>(this->contents[current_index]);
+        string index_val = address.to_string().substr(this->index_start_bit, this->index_bits);
+        string tag_val = bitset<32>(get<0>(get<1>(this->contents[current_index])[next_fill_way])).to_string().substr(32, this->tag_bits);
+        string offset_val = address.to_string().substr(this->offset_start_bit, this->offset_bits);
+        bitset<32> current_data = bitset<32>(tag_val + index_val + offset_val);
+        return current_data;
+    }
 };
 
 class FullyAssociativeCache : public Cache {
@@ -275,7 +290,7 @@ public:
     }
 
     bitset<32> getCurrentData(bitset<32> address) {
-
+        return bitset<32>(0);
     }
 };
 
@@ -287,6 +302,8 @@ Cache* createCache(int block_size, int set_size, int cache_size) {
         cache = new DirectMappedCache(block_size, set_size, cache_size);
     else
         cache = new SetAssociativeCache(block_size, set_size, cache_size);
+
+    return cache;
 }
 
 int main(int argc, char* argv[]) {
@@ -294,7 +311,8 @@ int main(int argc, char* argv[]) {
     ifstream cache_params;
     string dummyLine;
 
-    cache_params.open(argv[1]);
+    //cache_params.open(argv[1]);
+    cache_params.open("C:/Swarnashri/Masters/TandonCourses/GY6913_ComputerSystemsArchitecture/Assignments/Assignment3/GitWork1/CacheSimulator/Debug/cacheSampleOutput/cacheconfig.txt");
 
     while (!cache_params.eof())  // read config file
     {
@@ -319,9 +337,9 @@ int main(int argc, char* argv[]) {
     ifstream traces;
     ofstream tracesout;
     string outname;
-    outname = string(argv[2]) + ".out";
+    outname = string("C:/Swarnashri/Masters/TandonCourses/GY6913_ComputerSystemsArchitecture/Assignments/Assignment3/GitWork1/CacheSimulator/Debug/cacheSampleOutput/traces") + ".out";
 
-    traces.open(argv[2]);
+    traces.open("C:/Swarnashri/Masters/TandonCourses/GY6913_ComputerSystemsArchitecture/Assignments/Assignment3/GitWork1/CacheSimulator/Debug/cacheSampleOutput/cacheconfig.txt");
     tracesout.open(outname.c_str());
 
     string line;
