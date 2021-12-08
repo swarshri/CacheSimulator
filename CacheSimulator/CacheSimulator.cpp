@@ -98,7 +98,11 @@ public:
         this->index_bits = space_bits - way_bits - offset_bits;
         this->tag_bits = 32 - this->index_bits - this->offset_bits;
 
+	cout<< "tag for direct map" << this->tag_bits<< endl;
+
         this->index_start_bit = 32 - this->index_bits - this->offset_bits;
+	
+	cout << "index start bit dor direct map is:" << index_start_bit << endl;
 
         for (int i = 0; i < pow(2, this->index_bits); i++) {
             contents[i] = tuple<int, bool, bool>(0, false, false);
@@ -107,7 +111,7 @@ public:
 
     // Return 1 (Read Hit) if there is a hit, otherwise return 0 (Read Miss)
     bool read(bitset<32> address) {
-        int current_tag = bitset<32>(address.to_string().substr(32, this->tag_bits)).to_ulong();
+        int current_tag = bitset<32>(address.to_string().substr(0, this->tag_bits)).to_ulong();
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
 
         auto* current_data = &this->contents[current_index];
@@ -119,7 +123,7 @@ public:
 
     // Return 1 (Write Hit) if there is a hit, otherwise return 0 (Write Miss) 
     bool write(bitset<32> address) {
-        int current_tag = bitset<32>(address.to_string().substr(32, this->tag_bits)).to_ulong();
+        int current_tag = bitset<32>(address.to_string().substr(0, this->tag_bits)).to_ulong();
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
 
         auto* current_data = &this->contents[current_index];
@@ -133,7 +137,7 @@ public:
 
     // Update the cache content
     void update(bitset<32> address) {
-        int current_tag = bitset<32>(address.to_string().substr(32, this->tag_bits)).to_ulong();
+        int current_tag = bitset<32>(address.to_string().substr(0, this->tag_bits)).to_ulong();
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
 
         this->contents[current_index] = tuple<int, bool, bool>(current_tag, true, false);
@@ -148,7 +152,7 @@ public:
     bitset<32> getCurrentData(bitset<32> address) {
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
         string index_val = address.to_string().substr(this->index_start_bit, this->index_bits);
-        string tag_val = bitset<32>(get<int>(this->contents[current_index])).to_string().substr(32, this->tag_bits);
+        string tag_val = bitset<32>(get<int>(this->contents[current_index])).to_string().substr(0, this->tag_bits);
         string offset_val = address.to_string().substr(this->offset_start_bit, this->offset_bits);
         bitset<32> current_data = bitset<32>(index_val + tag_val + offset_val);
         return current_data;
@@ -170,6 +174,8 @@ public:
         this->tag_bits = 32 - this->index_bits - this->offset_bits;
 
         this->index_start_bit = 32 - this->index_bits - this->offset_bits;
+	
+	cout << "index start bit for set associative  is:" << index_start_bit << endl;
 
         for (int i = 0; i < pow(2, this->index_bits); i++) {
             get<1>(contents[i]).resize(this->ways); // resize the vector in contents to be equal to the number of ways
@@ -179,7 +185,7 @@ public:
 
     // Return 1 if there is a way with the same tag and valid bit (Read hit). Otherwise, Read Miss.
     bool read(bitset<32> address) {
-        int current_tag = bitset<32>(address.to_string().substr(32, this->tag_bits)).to_ulong();
+        int current_tag = bitset<32>(address.to_string().substr(0, this->tag_bits)).to_ulong();
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
 
         auto* current_data = &get<1>(this->contents[current_index]);
@@ -192,7 +198,7 @@ public:
 
     // "QUESTION" Before writing, shouldn't we check the dirty bit to write back to L2/main memory?
     bool write(bitset<32> address) {
-        int current_tag = bitset<32>(address.to_string().substr(32, this->tag_bits)).to_ulong();
+        int current_tag = bitset<32>(address.to_string().substr(0, this->tag_bits)).to_ulong();
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
 
         auto* current_data = &get<1>(this->contents[current_index]);
@@ -206,7 +212,7 @@ public:
     }
 
     void update(bitset<32> address) {
-        int current_tag = bitset<32>(address.to_string().substr(32, this->tag_bits)).to_ulong();
+        int current_tag = bitset<32>(address.to_string().substr(0, this->tag_bits)).to_ulong();
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
         int next_fill_pos = get<0>(this->contents[current_index]);
 
@@ -226,7 +232,7 @@ public:
         int current_index = bitset<32>(address.to_string().substr(this->index_start_bit, this->index_bits)).to_ulong();
         int next_fill_way = get<int>(this->contents[current_index]);
         string index_val = address.to_string().substr(this->index_start_bit, this->index_bits);
-        string tag_val = bitset<32>(get<0>(get<1>(this->contents[current_index])[next_fill_way])).to_string().substr(32, this->tag_bits);
+        string tag_val = bitset<32>(get<0>(get<1>(this->contents[current_index])[next_fill_way])).to_string().substr(0, this->tag_bits);
         string offset_val = address.to_string().substr(this->offset_start_bit, this->offset_bits);
         bitset<32> current_data = bitset<32>(tag_val + index_val + offset_val);
         return current_data;
@@ -252,7 +258,7 @@ public:
     }
 
     bool read(bitset<32> address) {
-        int current_tag = bitset<32>(address.to_string().substr(32, this->tag_bits)).to_ulong();
+        int current_tag = bitset<32>(address.to_string().substr(0, this->tag_bits)).to_ulong();
         auto way_data = get<1>(this->contents);
 
         for (auto data = way_data.begin(); data < way_data.end(); data++) {
@@ -263,7 +269,7 @@ public:
     }
 
     bool write(bitset<32> address) {
-        int current_tag = bitset<32>(address.to_string().substr(32, this->tag_bits)).to_ulong();
+        int current_tag = bitset<32>(address.to_string().substr(0, this->tag_bits)).to_ulong();
         auto way_data = get<1>(this->contents);
 
         for (auto data = way_data.begin(); data < way_data.end(); data++) {
@@ -276,7 +282,7 @@ public:
     }
 
     void update(bitset<32> address) {
-        int current_tag = bitset<32>(address.to_string().substr(32, this->tag_bits)).to_ulong();
+        int current_tag = bitset<32>(address.to_string().substr(0, this->tag_bits)).to_ulong();
 
         get<1>(this->contents)[get<0>(this->contents)] = tuple<int, bool, bool>(current_tag, true, false);
         if (get<0>(this->contents) == this->ways - 1)
@@ -311,8 +317,8 @@ int main(int argc, char* argv[]) {
     ifstream cache_params;
     string dummyLine;
 
-    //cache_params.open(argv[1]);
-    cache_params.open("C:/Swarnashri/Masters/TandonCourses/GY6913_ComputerSystemsArchitecture/Assignments/Assignment3/GitWork1/CacheSimulator/Debug/cacheSampleOutput/cacheconfig.txt");
+    cache_params.open(argv[1]);
+    //cache_params.open("C:/Swarnashri/Masters/TandonCourses/GY6913_ComputerSystemsArchitecture/Assignments/Assignment3/GitWork1/CacheSimulator/Debug/cacheSampleOutput/cacheconfig.txt");
 
     while (!cache_params.eof())  // read config file
     {
@@ -337,10 +343,12 @@ int main(int argc, char* argv[]) {
     ifstream traces;
     ofstream tracesout;
     string outname;
-    outname = string("C:/Swarnashri/Masters/TandonCourses/GY6913_ComputerSystemsArchitecture/Assignments/Assignment3/GitWork1/CacheSimulator/Debug/cacheSampleOutput/traces") + ".out";
-
-    traces.open("C:/Swarnashri/Masters/TandonCourses/GY6913_ComputerSystemsArchitecture/Assignments/Assignment3/GitWork1/CacheSimulator/Debug/cacheSampleOutput/cacheconfig.txt");
+    outname = string(argv[2]) + ".out";
+    traces.open(argv[2]);
     tracesout.open(outname.c_str());
+    //outname = string("C:/Swarnashri/Masters/TandonCourses/GY6913_ComputerSystemsArchitecture/Assignments/Assignment3/GitWork1/CacheSimulator/Debug/cacheSampleOutput/traces") + ".out";
+    //traces.open("C:/Swarnashri/Masters/TandonCourses/GY6913_ComputerSystemsArchitecture/Assignments/Assignment3/GitWork1/CacheSimulator/Debug/cacheSampleOutput/cacheconfig.txt");
+    //tracesout.open(outname.c_str());
 
     string line;
     string accesstype;  // the Read/Write access type from the memory trace;
@@ -363,7 +371,10 @@ int main(int argc, char* argv[]) {
                 // read access to the L1 Cache, 
                 bool l1_read_hit = L1Cache->read(accessaddr);
                 if (l1_read_hit)
+		{
                     L1AcceState = 1;
+		    L2AcceState = 0;
+		}
                 else {
                     L1AcceState = 2;
 
@@ -395,7 +406,10 @@ int main(int argc, char* argv[]) {
                 // write access to the L1 Cache,
                 bool l1_write_hit = L1Cache->write(accessaddr);
                 if (l1_write_hit)
+		{
                     L1AcceState = 3;
+ 		    L2AcceState = 0;
+		}
                 else {
                     L1AcceState = 4;
 
