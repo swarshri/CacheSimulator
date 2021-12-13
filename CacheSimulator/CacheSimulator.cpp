@@ -173,7 +173,10 @@ public:
 
         for (int i = 0; i < pow(2, this->index_bits); i++) {
             get<1>(contents[i]).resize(this->ways); // resize the vector in contents to be equal to the number of ways
-            contents[i] = tuple<int, vector<tuple<int, bool, bool>>>(0, { tuple<int, bool, bool>(0, false, false) });
+            this->contents[i] = tuple<int, vector<tuple<int, bool, bool>>>(0, {tuple<int, bool, bool>(0, false, false)});
+            for (int j = 0; j < this->ways - 1; j++) {
+                get<1>(this->contents[i]).push_back(tuple<int, bool, bool>(0, false, false));
+            }
         }
     }
 
@@ -317,6 +320,7 @@ int main(int argc, char* argv[]) {
     string dummyLine;
 
     cache_params.open(argv[1]);
+    //cache_params.open("C:/Swarnashri/Masters/TandonCourses/GY6913_ComputerSystemsArchitecture/Assignments/Assignment3/TestCases/Debug/cacheconfig.txt");
 
     while (!cache_params.eof())  // read config file
     {
@@ -342,7 +346,9 @@ int main(int argc, char* argv[]) {
     ofstream tracesout;
     string outname;
     outname = string(argv[2]) + ".out";
+    //outname = string("C:/Swarnashri/Masters/TandonCourses/GY6913_ComputerSystemsArchitecture/Assignments/Assignment3/TestCases/Debug/trace") + ".out";
     traces.open(argv[2]);
+    //traces.open("C:/Swarnashri/Masters/TandonCourses/GY6913_ComputerSystemsArchitecture/Assignments/Assignment3/TestCases/Debug/trace");
     tracesout.open(outname.c_str());
 
     string line;
